@@ -23,6 +23,19 @@ internal class ColorfulConsoleWriter : IConsoleWriter
 
 
     /*********
+    ** Accessors
+    *********/
+    /// <summary>An optional interceptor that wraps console writes (e.g. to coordinate with an interactive prompt).</summary>
+    public Action<Action>? WriteInterceptor { get; set; }
+
+    /// <summary>Whether console color formatting is currently enabled.</summary>
+    public bool IsColorEnabled => this.SupportsColor;
+
+    /// <summary>The resolved color scheme currently in use.</summary>
+    public MonitorColorScheme ActiveColorScheme { get; private set; } = MonitorColorScheme.None;
+
+
+    /*********
     ** Public methods
     *********/
     /// <summary>Construct an instance.</summary>
@@ -50,11 +63,14 @@ internal class ColorfulConsoleWriter : IConsoleWriter
         {
             this.SupportsColor = false;
             this.Colors = null;
+            this.ActiveColorScheme = MonitorColorScheme.None;
         }
         else
         {
             this.SupportsColor = this.TestColorSupport();
-            this.Colors = ColorfulConsoleWriter.GetConsoleColorScheme(this.Platform, colorSchemeId, colorSchemes);
+            MonitorColorScheme resolvedScheme = ColorfulConsoleWriter.ResolveColorSchemeId(this.Platform, colorSchemeId);
+            this.ActiveColorScheme = this.SupportsColor ? resolvedScheme : MonitorColorScheme.None;
+            this.Colors = ColorfulConsoleWriter.GetConsoleColorScheme(resolvedScheme, colorSchemes);
         }
     }
 
@@ -63,6 +79,22 @@ internal class ColorfulConsoleWriter : IConsoleWriter
     /// <param name="level">The log level.</param>
     public void WriteLine(string message, ConsoleLogLevel level)
     {
+        Action<Action>? interceptor = this.WriteInterceptor;
+        if (interceptor != null)
+            interceptor(() => this.WriteLineCore(message, level));
+        else
+            this.WriteLineCore(message, level);
+    }
+
+    /// <summary>Write a message line directly to the console without interception.</summary>
+    /// <param name="message">The message to log.</param>
+    /// <param name="level">The log level.</param>
+    private void WriteLineCore(string message, ConsoleLogLevel level)
+    {
+        // normalize bare LF to CRLF on Windows so multi-line logs don't staircase in VT console mode
+        if (Environment.NewLine == "\r\n" && message.Contains('\n'))
+            message = message.Replace("\r\n", "\n").Replace("\n", "\r\n");
+
         if (this.SupportsColor)
         {
             if (level == ConsoleLogLevel.Critical)
@@ -132,21 +164,26 @@ internal class ColorfulConsoleWriter : IConsoleWriter
         }
     }
 
-    /// <summary>Get the color scheme to use for the current console.</summary>
+    /// <summary>Resolve <see cref="MonitorColorScheme.AutoDetect"/> to a concrete color scheme.</summary>
     /// <param name="platform">The target platform.</param>
-    /// <param name="colorSchemeId">The color scheme ID in <paramref name="colorConfig"/> to use, or <see cref="MonitorColorScheme.AutoDetect"/> to select one automatically.</param>
-    /// <param name="colorConfig">The colors to use for text written to the SMAPI console.</param>
-    private static IDictionary<ConsoleLogLevel, ConsoleColor> GetConsoleColorScheme(Platform platform, MonitorColorScheme colorSchemeId, Dictionary<MonitorColorScheme, Dictionary<ConsoleLogLevel, ConsoleColor>> colorConfig)
+    /// <param name="colorSchemeId">The configured color scheme ID.</param>
+    private static MonitorColorScheme ResolveColorSchemeId(Platform platform, MonitorColorScheme colorSchemeId)
     {
-        // get color scheme ID
         if (colorSchemeId == MonitorColorScheme.AutoDetect)
         {
-            colorSchemeId = platform == Platform.Mac
+            return platform == Platform.Mac
                 ? MonitorColorScheme.LightBackground // macOS doesn't provide console background color info, but it's usually white.
                 : ColorfulConsoleWriter.IsDark(Console.BackgroundColor) ? MonitorColorScheme.DarkBackground : MonitorColorScheme.LightBackground;
         }
 
-        // get colors for scheme
+        return colorSchemeId;
+    }
+
+    /// <summary>Get the color scheme to use for the current console.</summary>
+    /// <param name="colorSchemeId">The resolved color scheme ID in <paramref name="colorConfig"/> to use.</param>
+    /// <param name="colorConfig">The colors to use for text written to the SMAPI console.</param>
+    private static IDictionary<ConsoleLogLevel, ConsoleColor> GetConsoleColorScheme(MonitorColorScheme colorSchemeId, Dictionary<MonitorColorScheme, Dictionary<ConsoleLogLevel, ConsoleColor>> colorConfig)
+    {
         return colorConfig.TryGetValue(colorSchemeId, out Dictionary<ConsoleLogLevel, ConsoleColor>? scheme)
             ? scheme
             : throw new NotSupportedException($"Unknown color scheme '{colorSchemeId}'.");

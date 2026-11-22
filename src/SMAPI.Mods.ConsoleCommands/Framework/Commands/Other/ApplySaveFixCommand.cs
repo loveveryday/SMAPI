@@ -74,6 +74,17 @@ internal class ApplySaveFixCommand : ConsoleCommand
         }
     }
 
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        if (argIndex != 0)
+            yield break;
+
+        yield return "list";
+        foreach (string id in this.GetSaveIds())
+            yield return id;
+    }
+
 
     /*********
     ** Private methods

@@ -120,4 +120,16 @@ internal class SetVerboseCommand : ConsoleCommand
             }
         }
     }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        if (argIndex == 0)
+            return ["true", "false"];
+
+        List<string> ids = ["SMAPI"];
+        foreach (IModInfo mod in this.ModRegistry.GetAll())
+            ids.Add(mod.Manifest.UniqueID);
+        return ids;
+    }
 }

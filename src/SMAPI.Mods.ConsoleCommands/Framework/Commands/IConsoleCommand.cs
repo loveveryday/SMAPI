@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands;
 
 /// <summary>A console command to register.</summary>
@@ -24,6 +26,11 @@ internal interface IConsoleCommand
     /// <param name="command">The command name.</param>
     /// <param name="args">The command arguments.</param>
     void Handle(IMonitor monitor, string command, ArgumentParser args);
+
+    /// <summary>Get suggested argument values for tab-completion.</summary>
+    /// <param name="args">The arguments entered so far (including the current partial argument).</param>
+    /// <param name="argIndex">The zero-based index of the argument being completed.</param>
+    IEnumerable<string> GetCompletions(string[] args, int argIndex);
 
     /// <summary>Perform any logic needed on update tick.</summary>
     /// <param name="monitor">Writes messages to the console and log file.</param>

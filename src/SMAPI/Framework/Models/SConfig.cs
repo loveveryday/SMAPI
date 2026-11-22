@@ -19,6 +19,7 @@ internal class SConfig
         [nameof(SConfig.CheckForBlacklistUpdates)] = true,
         [nameof(SConfig.CheckContentIntegrity)] = true,
         [nameof(SConfig.ListenForConsoleInput)] = true,
+        [nameof(SConfig.InteractiveConsole)] = true,
         [nameof(SConfig.ParanoidWarnings)] = Constants.IsDebugBuild,
         [nameof(SConfig.UseBetaChannel)] = Constants.ApiVersion.IsPrerelease(),
         [nameof(SConfig.GitHubProjectName)] = "Pathoschild/SMAPI",
@@ -61,6 +62,9 @@ internal class SConfig
 
     /// <summary>Whether SMAPI should listen for console input to support console commands.</summary>
     public bool ListenForConsoleInput { get; set; }
+
+    /// <summary>Whether to enable the enhanced interactive console (prompt, syntax highlighting, Emacs key bindings, and tab completion).</summary>
+    public bool InteractiveConsole { get; set; }
 
     /// <summary>Whether to add a section to the 'mod issues' list for mods which directly use potentially sensitive .NET APIs like file or shell access.</summary>
     public bool ParanoidWarnings { get; set; }
@@ -127,6 +131,7 @@ internal class SConfig
     /// <param name="checkForBlacklistUpdates"><inheritdoc cref="CheckForBlacklistUpdates" path="/summary" /></param>
     /// <param name="checkContentIntegrity"><inheritdoc cref="CheckContentIntegrity" path="/summary" /></param>
     /// <param name="listenForConsoleInput"><inheritdoc cref="ListenForConsoleInput" path="/summary" /></param>
+    /// <param name="interactiveConsole"><inheritdoc cref="InteractiveConsole" path="/summary" /></param>
     /// <param name="paranoidWarnings"><inheritdoc cref="ParanoidWarnings" path="/summary" /></param>
     /// <param name="useBetaChannel"><inheritdoc cref="UseBetaChannel" path="/summary" /></param>
     /// <param name="gitHubProjectName"><inheritdoc cref="GitHubProjectName" path="/summary" /></param>
@@ -151,6 +156,7 @@ internal class SConfig
         bool? checkForBlacklistUpdates,
         bool? checkContentIntegrity,
         bool? listenForConsoleInput,
+        bool? interactiveConsole,
         bool? paranoidWarnings,
         bool? useBetaChannel,
         string gitHubProjectName,
@@ -176,6 +182,7 @@ internal class SConfig
         this.CheckForBlacklistUpdates = checkForBlacklistUpdates ?? (bool)SConfig.DefaultValues[nameof(this.CheckForBlacklistUpdates)];
         this.CheckContentIntegrity = checkContentIntegrity ?? (bool)SConfig.DefaultValues[nameof(this.CheckContentIntegrity)];
         this.ListenForConsoleInput = listenForConsoleInput ?? (bool)SConfig.DefaultValues[nameof(this.ListenForConsoleInput)];
+        this.InteractiveConsole = interactiveConsole ?? (bool)SConfig.DefaultValues[nameof(this.InteractiveConsole)];
         this.ParanoidWarnings = paranoidWarnings ?? (bool)SConfig.DefaultValues[nameof(this.ParanoidWarnings)];
         this.UseBetaChannel = useBetaChannel ?? (bool)SConfig.DefaultValues[nameof(this.UseBetaChannel)];
         this.GitHubProjectName = gitHubProjectName;

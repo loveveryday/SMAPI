@@ -29,7 +29,14 @@ public class ModEntry : Mod
         // register commands
         this.Commands = this.ScanForCommands().ToArray();
         foreach (IConsoleCommand command in this.Commands)
-            helper.ConsoleCommands.Add(command.Name, command.Description, (name, args) => this.HandleCommand(command, name, args));
+        {
+            helper.ConsoleCommands.Add(
+                name: command.Name,
+                documentation: command.Description,
+                callback: (name, args) => this.HandleCommand(command, name, args),
+                getCompletions: (_, args, argIndex) => command.GetCompletions(args, argIndex)
+            );
+        }
 
         // cache commands
         this.UpdateHandlers = this.Commands.Where(p => p.MayNeedUpdate).ToArray();

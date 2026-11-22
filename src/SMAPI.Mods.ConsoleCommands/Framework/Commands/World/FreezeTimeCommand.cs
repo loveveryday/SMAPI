@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using StardewValley;
 
@@ -65,5 +66,13 @@ internal class FreezeTimeCommand : ConsoleCommand
     {
         if (this.FreezeTime && Context.IsWorldReady)
             Game1.timeOfDay = FreezeTimeCommand.FrozenTime;
+    }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        return argIndex == 0
+            ? ["0", "1"]
+            : [];
     }
 }

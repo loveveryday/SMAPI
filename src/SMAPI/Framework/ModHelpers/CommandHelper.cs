@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace StardewModdingAPI.Framework.ModHelpers;
 
@@ -27,7 +28,13 @@ internal class CommandHelper : BaseHelper, ICommandHelper
     /// <inheritdoc />
     public ICommandHelper Add(string name, string documentation, Action<string, string[]> callback)
     {
-        this.CommandManager.Add(this.Mod, name, documentation, callback);
+        return this.Add(name, documentation, callback, getCompletions: null);
+    }
+
+    /// <inheritdoc />
+    public ICommandHelper Add(string name, string documentation, Action<string, string[]> callback, Func<string, string[], int, IEnumerable<string>>? getCompletions)
+    {
+        this.CommandManager.Add(this.Mod, name, documentation, callback, getCompletions);
         return this;
     }
 }

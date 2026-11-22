@@ -27,6 +27,7 @@
     <PackageReference Include="Pathoschild.Http.FluentClient" />
     <PackageReference Include="Pintail" />
     <PackageReference Include="Platonymous.TMXTile" />
+    <PackageReference Include="PrettyPrompt" />
     <PackageReference Include="System.Reflection.Emit" />
   </ItemGroup>
 

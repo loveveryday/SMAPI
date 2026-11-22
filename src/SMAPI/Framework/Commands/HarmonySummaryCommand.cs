@@ -72,6 +72,38 @@ internal class HarmonySummaryCommand : IInternalCommand
     }
 
 
+    /// <inheritdoc />
+    public IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        HashSet<string> suggestions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "prefix",
+            "postfix",
+            "finalizer",
+            "transpiler"
+        };
+
+        try
+        {
+            foreach (MethodBase method in Harmony.GetAllPatchedMethods().ToArray())
+            {
+                HarmonyLib.Patches? patchInfo = Harmony.GetPatchInfo(method);
+                if (patchInfo is null)
+                    continue;
+
+                foreach (string owner in patchInfo.Owners)
+                    suggestions.Add(owner);
+            }
+        }
+        catch
+        {
+            // ignore transient reflection/Harmony errors on background console thread
+        }
+
+        return suggestions;
+    }
+
+
     /*********
     ** Private methods
     *********/

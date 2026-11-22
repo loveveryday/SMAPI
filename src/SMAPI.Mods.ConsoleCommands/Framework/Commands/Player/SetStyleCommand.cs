@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using StardewValley;
 
@@ -24,6 +25,14 @@ internal class SetStyleCommand : ConsoleCommand
                 """
         )
     { }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        return argIndex == 0
+            ? ["hair", "shirt", "acc", "skin", "shoe", "swim", "gender"]
+            : [];
+    }
 
     /// <summary>Handle the command.</summary>
     /// <param name="monitor">Writes messages to the console and log file.</param>

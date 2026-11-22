@@ -556,8 +556,9 @@ internal class SCore : IDisposable
                 () => this.LogManager.RunConsoleInputLoop(
                     commandManager: this.CommandManager,
                     reloadTranslations: this.ReloadTranslations,
-                    handleInput: input => this.RawCommandQueue.Add(input),
-                    continueWhile: () => this.IsGameRunning && !this.IsExiting
+                    handleInput: input => this.RawCommandQueue.AddAndWait(input),
+                    continueWhile: () => this.IsGameRunning && !this.IsExiting,
+                    interactiveConsole: this.Settings.InteractiveConsole
                 )
             ).Start();
         }
@@ -620,9 +621,9 @@ internal class SCore : IDisposable
             /*********
             ** Parse commands
             *********/
-            if (this.RawCommandQueue.TryDequeue(out string[]? rawCommands))
+            if (this.RawCommandQueue.TryDequeue(out QueuedRawCommand[]? rawCommands))
             {
-                foreach (string rawInput in rawCommands)
+                foreach ((string rawInput, ManualResetEventSlim? completed) in rawCommands)
                 {
                     // parse command
                     string? name;
@@ -634,17 +635,19 @@ internal class SCore : IDisposable
                         if (!this.CommandManager.TryParse(rawInput, out name, out args, out command, out screenId))
                         {
                             this.Monitor.Log($"Unknown command '{(!string.IsNullOrWhiteSpace(name) ? name : rawInput)}'; type 'help' for a list of available commands.", LogLevel.Error);
+                            completed?.Set();
                             continue;
                         }
                     }
                     catch (Exception ex)
                     {
                         this.Monitor.Log($"Failed parsing that command:\n{ex.GetLogSummary()}", LogLevel.Error);
+                        completed?.Set();
                         continue;
                     }
 
                     // queue command for screen
-                    this.ScreenCommandQueue.GetValueForScreen(screenId).Add(new(command, name, args));
+                    this.ScreenCommandQueue.GetValueForScreen(screenId).Add(new(command, name, args, completed));
                 }
             }
 
@@ -703,7 +706,7 @@ internal class SCore : IDisposable
             if (this.ScreenCommandQueue.Value.Count > 0)
             {
                 var commandQueue = this.ScreenCommandQueue.Value;
-                foreach ((Command? command, string? name, string[]? args) in commandQueue)
+                foreach ((Command? command, string? name, string[]? args, ManualResetEventSlim? completed) in commandQueue)
                 {
                     try
                     {
@@ -715,6 +718,10 @@ internal class SCore : IDisposable
                             command.Mod.LogAsMod($"Mod failed handling that command:\n{ex.GetLogSummary()}", LogLevel.Error);
                         else
                             this.Monitor.Log($"Failed handling that command:\n{ex.GetLogSummary()}", LogLevel.Error);
+                    }
+                    finally
+                    {
+                        completed?.Set();
                     }
                 }
                 commandQueue.Clear();
@@ -2663,5 +2670,6 @@ internal class SCore : IDisposable
     /// <param name="Command">The command which can handle the input.</param>
     /// <param name="Name">The parsed command name.</param>
     /// <param name="Args">The parsed command arguments.</param>
-    private readonly record struct QueuedCommand(Command Command, string Name, string[] Args);
+    /// <param name="Completed">An optional signal set after the command finishes executing.</param>
+    private readonly record struct QueuedCommand(Command Command, string Name, string[] Args, ManualResetEventSlim? Completed = null);
 }

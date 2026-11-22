@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Xna.Framework;
 using StardewValley;
@@ -64,6 +65,14 @@ internal class SetColorCommand : ConsoleCommand
                 monitor.Log("OK, your pants color is updated.", LogLevel.Info);
                 break;
         }
+    }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        return argIndex == 0
+            ? ["hair", "eyes", "pants"]
+            : [];
     }
 
 

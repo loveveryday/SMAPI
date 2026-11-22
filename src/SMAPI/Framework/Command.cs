@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace StardewModdingAPI.Framework;
 
@@ -20,6 +21,9 @@ internal class Command
     /// <summary>The method to invoke when the command is triggered. This method is passed the command name and arguments submitted by the user.</summary>
     public Action<string, string[]> Callback { get; }
 
+    /// <summary>An optional callback which returns suggested argument values for tab-completion.</summary>
+    public Func<string, string[], int, IEnumerable<string>>? GetCompletions { get; }
+
 
     /*********
     ** Public methods
@@ -29,11 +33,13 @@ internal class Command
     /// <param name="name">The command name, which the user must type to trigger it.</param>
     /// <param name="documentation">The human-readable documentation shown when the player runs the built-in 'help' command.</param>
     /// <param name="callback">The method to invoke when the command is triggered. This method is passed the command name and arguments submitted by the user.</param>
-    public Command(IModMetadata? mod, string name, string documentation, Action<string, string[]> callback)
+    /// <param name="getCompletions">An optional callback which returns suggested argument values for tab-completion.</param>
+    public Command(IModMetadata? mod, string name, string documentation, Action<string, string[]> callback, Func<string, string[], int, IEnumerable<string>>? getCompletions = null)
     {
         this.Mod = mod;
         this.Name = name;
         this.Documentation = documentation;
         this.Callback = callback;
+        this.GetCompletions = getCompletions;
     }
 }

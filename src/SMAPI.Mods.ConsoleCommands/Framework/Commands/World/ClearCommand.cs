@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -40,6 +41,36 @@ internal class ClearCommand : ConsoleCommand
                 """
         )
     { }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        if (argIndex == 0)
+        {
+            List<string> locations = ["current"];
+            if (Context.IsWorldReady && Game1.locations != null)
+            {
+                try
+                {
+                    foreach (GameLocation loc in Game1.locations.ToArray())
+                    {
+                        if (!string.IsNullOrWhiteSpace(loc?.Name))
+                            locations.Add(loc.Name);
+                    }
+                }
+                catch
+                {
+                    // ignore transient collection modification on background thread
+                }
+            }
+            return locations;
+        }
+
+        if (argIndex == 1)
+            return this.ValidTypes;
+
+        return [];
+    }
 
     /// <summary>Handle the command.</summary>
     /// <param name="monitor">Writes messages to the console and log file.</param>

@@ -124,7 +124,7 @@ internal class Monitor : IMonitor
     internal void Newline()
     {
         if (this.WriteToConsole)
-            Console.WriteLine();
+            this.ConsoleWriter.WriteLine("", ConsoleLogLevel.Info);
         this.LogFile.WriteLine("");
     }
 

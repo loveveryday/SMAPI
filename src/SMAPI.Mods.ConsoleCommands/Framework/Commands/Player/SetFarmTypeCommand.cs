@@ -58,6 +58,17 @@ internal class SetFarmTypeCommand : ConsoleCommand
             this.HandleCustomFarmType(farmType, monitor);
     }
 
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        if (argIndex != 0)
+            yield break;
+
+        yield return "list";
+        for (int id = 0; id < Farm.layout_max; id++)
+            yield return id.ToString();
+    }
+
 
     /*********
     ** Private methods

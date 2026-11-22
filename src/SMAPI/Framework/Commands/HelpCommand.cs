@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace StardewModdingAPI.Framework.Commands;
@@ -94,5 +95,14 @@ internal class HelpCommand : IInternalCommand
 
             monitor.Log(message, LogLevel.Info);
         }
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        if (argIndex == 0)
+            return this.CommandManager.GetAll().Select(p => p.Name);
+
+        return [];
     }
 }

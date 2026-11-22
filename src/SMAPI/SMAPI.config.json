@@ -58,6 +58,13 @@ in future SMAPI versions.
     "ListenForConsoleInput": true,
 
     /**
+     * Whether to enable the enhanced interactive console (with bash-like prompt, syntax
+     * highlighting, Emacs key bindings, and tab auto-completion). If disabled or unsupported by
+     * the terminal, SMAPI falls back to basic line input.
+     */
+    "InteractiveConsole": true,
+
+    /**
      * Whether SMAPI should rewrite mods for compatibility.
      *
      * Disabling this may prevent older mods from loading.

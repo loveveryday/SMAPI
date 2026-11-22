@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using StardewModdingAPI.Utilities;
@@ -55,5 +56,13 @@ internal class SetSeasonCommand : ConsoleCommand
         Game1.setGraphicsForSeason();
         Game1.stats.DaysPlayed = (uint)SDate.Now().DaysSinceStart;
         monitor.Log($"OK, the date is now {Game1.currentSeason} {Game1.dayOfMonth}.", LogLevel.Info);
+    }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        return argIndex == 0
+            ? this.ValidSeasons
+            : [];
     }
 }

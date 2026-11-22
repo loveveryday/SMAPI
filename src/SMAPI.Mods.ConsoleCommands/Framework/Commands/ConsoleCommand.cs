@@ -29,6 +29,9 @@ internal abstract class ConsoleCommand : IConsoleCommand
     /// <param name="args">The command arguments.</param>
     public abstract void Handle(IMonitor monitor, string command, ArgumentParser args);
 
+    /// <inheritdoc />
+    public virtual IEnumerable<string> GetCompletions(string[] args, int argIndex) => [];
+
     /// <summary>Perform any logic needed on update tick.</summary>
     /// <param name="monitor">Writes messages to the console and log file.</param>
     public virtual void OnUpdated(IMonitor monitor) { }

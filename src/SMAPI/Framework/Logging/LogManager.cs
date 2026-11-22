@@ -112,7 +112,7 @@ internal class LogManager : IDisposable
     ****/
     /// <summary>Run a loop handling console input.</summary>
     [SuppressMessage("ReSharper", "FunctionNeverReturns", Justification = "The thread is aborted when the game exits.")]
-    public void RunConsoleInputLoop(CommandManager commandManager, Action reloadTranslations, Action<string> handleInput, Func<bool> continueWhile)
+    public void RunConsoleInputLoop(CommandManager commandManager, Action reloadTranslations, Action<string> handleInput, Func<bool> continueWhile, bool interactiveConsole = true)
     {
         // prepare console
         this.Monitor.Log("Type 'help' for help, or 'help <cmd>' for a command's usage", LogLevel.Info);
@@ -122,20 +122,18 @@ internal class LogManager : IDisposable
             .Add(new ReloadI18nCommand(reloadTranslations), this.Monitor);
 
         // start handling command line input
-        Thread inputThread = new(() =>
+        InteractiveConsoleReader reader = new(
+            commandManager: commandManager,
+            consoleWriter: this.ConsoleWriter,
+            monitor: this.Monitor,
+            enableInteractive: interactiveConsole,
+            writeToConsole: this.Monitor.WriteToConsole
+        );
+        Thread inputThread = new(() => reader.RunInputLoop(input =>
         {
-            while (true)
-            {
-                // get input
-                string? input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input))
-                    continue;
-
-                // handle command
-                this.Monitor.LogUserInput(input);
-                handleInput(input);
-            }
-        });
+            this.Monitor.LogUserInput(input);
+            handleInput(input);
+        }));
         inputThread.Start();
 
         // keep console thread alive while the game is running
