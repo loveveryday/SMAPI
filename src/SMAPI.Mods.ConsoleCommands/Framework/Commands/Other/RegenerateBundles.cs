@@ -32,6 +32,16 @@ internal class RegenerateBundlesCommand : ConsoleCommand
         )
     { }
 
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        HashSet<string> used = new(args.Take(argIndex), StringComparer.OrdinalIgnoreCase);
+        List<string> options = ["confirm", "ignore_seed"];
+        options.AddRange(Enum.GetNames<Game1.BundleType>());
+
+        return options.Where(p => !used.Contains(p));
+    }
+
     /// <summary>Handle the command.</summary>
     /// <param name="monitor">Writes messages to the console and log file.</param>
     /// <param name="command">The command name.</param>

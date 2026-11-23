@@ -263,12 +263,20 @@ internal class InteractiveConsoleReader
     }
 
     /// <summary>Get the file path for persistent console command history, creating its directory if needed.</summary>
+    /// <remarks>Stored in <see cref="Constants.DataPath"/> rather than <see cref="Constants.LogDir"/> because <c>SCore.PurgeNormalLogs</c> deletes <c>SMAPI-*</c> files in <see cref="Constants.LogDir"/> on every launch.</remarks>
     private string? GetPersistentHistoryPath()
     {
         try
         {
-            Directory.CreateDirectory(Constants.LogDir);
-            return Path.Combine(Constants.LogDir, "SMAPI-console-history.txt");
+            Directory.CreateDirectory(Constants.DataPath);
+            string path = Path.Combine(Constants.DataPath, "SMAPI-console-history.txt");
+
+            // migrate any legacy file from ErrorLogs if present
+            string legacyPath = Path.Combine(Constants.LogDir, "SMAPI-console-history.txt");
+            if (!File.Exists(path) && File.Exists(legacyPath))
+                File.Move(legacyPath, path);
+
+            return path;
         }
         catch
         {
@@ -332,8 +340,7 @@ internal class InteractiveConsoleReader
     {
         try
         {
-            Directory.CreateDirectory(Constants.LogDir);
-            string cachePath = Path.Combine(Constants.LogDir, ".SMAPI-console-history.cache");
+            string cachePath = Path.Combine(Path.GetTempPath(), "SMAPI-console-history.cache");
             List<string> encodedLines = new(history.Count);
             foreach (string entry in history)
                 encodedLines.Add(Convert.ToBase64String(Encoding.UTF8.GetBytes(entry)));

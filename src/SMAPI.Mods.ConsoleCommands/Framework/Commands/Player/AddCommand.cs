@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using StardewValley;
+using StardewValley.ItemTypeDefinitions;
 using Object = StardewValley.Object;
 
 namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player;
@@ -42,6 +44,66 @@ internal class AddCommand : ConsoleCommand
                 """
         )
     { }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        bool isNameMode = args.Length > 0 && args[0].Equals("name", StringComparison.OrdinalIgnoreCase);
+
+        // arg 0: 'name' keyword + qualified item IDs
+        if (argIndex == 0)
+        {
+            List<string> results = ["name"];
+            if (Context.IsWorldReady)
+            {
+                try
+                {
+                    foreach (IItemDataDefinition itemType in ItemRegistry.ItemTypes)
+                    {
+                        foreach (string id in itemType.GetAllIds())
+                            results.Add(itemType.Identifier + id);
+                    }
+                }
+                catch
+                {
+                    // ignore transient registry access errors on background thread
+                }
+            }
+            return results;
+        }
+
+        // arg 1 in 'name' mode: item display names (quoted automatically by CommandManager if containing spaces)
+        if (argIndex == 1 && isNameMode)
+        {
+            if (!Context.IsWorldReady)
+                return [];
+
+            HashSet<string> names = new(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                foreach (IItemDataDefinition itemType in ItemRegistry.ItemTypes)
+                {
+                    foreach (string id in itemType.GetAllIds())
+                    {
+                        ParsedItemData? data = itemType.GetData(id);
+                        if (!string.IsNullOrWhiteSpace(data?.DisplayName))
+                            names.Add(data.DisplayName);
+                    }
+                }
+            }
+            catch
+            {
+                // ignore transient registry access errors on background thread
+            }
+            return names;
+        }
+
+        // quality argument: arg 2 in ID mode, arg 3 in 'name' mode
+        if ((argIndex == 2 && !isNameMode) || (argIndex == 3 && isNameMode))
+            return [Object.lowQuality.ToString(), Object.medQuality.ToString(), Object.highQuality.ToString(), Object.bestQuality.ToString()];
+
+        return [];
+    }
 
     /// <summary>Handle the command.</summary>
     /// <param name="monitor">Writes messages to the console and log file.</param>

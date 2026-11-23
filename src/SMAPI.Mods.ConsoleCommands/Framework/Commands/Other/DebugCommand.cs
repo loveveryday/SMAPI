@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using StardewValley;
 
 namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Other;
@@ -27,5 +30,41 @@ internal class DebugCommand : ConsoleCommand
                 ? $"> {Game1.debugOutput}"
                 : "Sent debug command to the game, but there was no output.", LogLevel.Info);
         }
+    }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        if (argIndex == 0)
+        {
+            try
+            {
+                return DebugCommands.SearchCommandNames("", displayAliases: false);
+            }
+            catch
+            {
+                return [];
+            }
+        }
+
+        if (argIndex == 1 && args.Length > 0 && (args[0].Equals("warp", StringComparison.OrdinalIgnoreCase) || args[0].Equals("w", StringComparison.OrdinalIgnoreCase)))
+        {
+            if (Context.IsWorldReady && Game1.locations != null)
+            {
+                try
+                {
+                    return Game1.locations
+                        .ToArray()
+                        .Where(loc => !string.IsNullOrWhiteSpace(loc?.Name))
+                        .Select(loc => loc.Name);
+                }
+                catch
+                {
+                    return [];
+                }
+            }
+        }
+
+        return [];
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using StardewValley;
 
@@ -59,5 +60,13 @@ internal class SetNameCommand : ConsoleCommand
                     monitor.Log($"Your farm's name is currently '{Game1.player.farmName}'. Type 'help player_setname' for usage.", LogLevel.Info);
                 break;
         }
+    }
+
+    /// <inheritdoc />
+    public override IEnumerable<string> GetCompletions(string[] args, int argIndex)
+    {
+        return argIndex == 0
+            ? ["player", "farm"]
+            : [];
     }
 }
