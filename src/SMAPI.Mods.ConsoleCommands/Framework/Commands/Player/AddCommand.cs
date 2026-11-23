@@ -88,6 +88,8 @@ internal class AddCommand : ConsoleCommand
                         ParsedItemData? data = itemType.GetData(id);
                         if (!string.IsNullOrWhiteSpace(data?.DisplayName))
                             names.Add(data.DisplayName);
+                        if (!string.IsNullOrWhiteSpace(data?.InternalName))
+                            names.Add(data.InternalName); // so English names complete in non-English games
                     }
                 }
             }
@@ -143,7 +145,7 @@ internal class AddCommand : ConsoleCommand
 
         // add to inventory
         Game1.player.addItemByMenuIfNecessary(match.Item);
-        monitor.Log($"OK, added {match.Name} (ID: {match.QualifiedItemId}) to your inventory.", LogLevel.Info);
+        monitor.Log($"OK, added {match.DisplayName} (ID: {match.QualifiedItemId}) to your inventory.", LogLevel.Info);
     }
 
 
